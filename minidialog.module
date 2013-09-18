@@ -6,9 +6,9 @@
  */
 
 /**
- * Implements hook_init().
+ * Implements hook_page_build().
  */
-function minidialog_init() {
+function minidialog_page_build(&$page) {
   drupal_add_library('minidialog', 'dialog', true);
 }
 
