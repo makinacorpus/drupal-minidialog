@@ -39,6 +39,7 @@
         ev.stopPropagation();
         jQuery("#minidialog .content").html("");
         jQuery("#minidialog").dialog("close");
+        jQuery("#minidialog").dialog("destroy");
       });
 
       // setTimeout() call is a workaround: in some edge cases the dialog
@@ -60,6 +61,7 @@
       } else {
         jQuery("#minidialog .content").html("");
         jQuery("#minidialog").dialog("close");
+        jQuery("#minidialog").dialog("destroy");
       }
     }
   });
