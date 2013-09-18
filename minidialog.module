@@ -1,0 +1,126 @@
+<?php
+
+/**
+ * @file
+ * Mini dialog module.
+ */
+
+/**
+ * Implements hook_init().
+ */
+function minidialog_init() {
+  drupal_add_library('minidialog', 'dialog', true);
+}
+
+/**
+ * Implements hook_library().
+ */
+function minidialog_library() {
+  return array(
+    'dialog' => array(
+      'title'   => 'Minidialog',
+      'website' => 'http://perdu.com',
+      'version' => '0.1',
+      'js' => array(
+        drupal_get_path('module', 'minidialog') . '/minidialog.js' => array(),
+      ),
+      'css' => array(
+        drupal_get_path('module', 'minidialog') . '/minidialog.css' => array(
+          'type'  => 'file',
+          'media' => 'screen',
+        ),
+      ),
+      'dependencies' => array(
+        array('system', 'ui.dialog'),
+      ),
+    ),
+  );
+}
+
+/**
+ * Open the minidialog dialog.
+ *
+ * @param string|array $content
+ *   drupal_render() friendly structure.
+ *
+ * @return array
+ *   AJAX command.
+ */
+function minidialog_ajax_command_content($content) {
+
+  if (is_array($content)) {
+
+    // Attempt to append the close button if appliable.
+    if (isset($content['#type']) && 'form' === $content['#type']) {
+      if (isset($content['actions'])) {
+        $content['actions']['minidialog-close'] = array(
+          '#type'       => 'button',
+          '#value'      => t("Cancel"),
+          '#attributes' => array('id' => 'minidialog-close'),
+        );
+
+        // Fixes some forms in order to avoid double cancel buttons.
+        unset($content['actions']['cancel']);
+
+      } else {
+        $content['minidialog-close'] = array(
+          '#type'       => 'button',
+          '#value'      => t("Cancel"),
+          '#attributes' => array('id' => 'minidialog-close'),
+        );
+      }
+    }
+
+    $content = drupal_render($content);
+
+  } else {
+    $content = (string)$content;
+  }
+
+  return ajax_command_html('#minidialog .content', $content);
+}
+
+/**
+ * Open the minidialog dialog.
+ *
+ * @param array $content
+ *   Options for jQuery UI's jQuery.dialog() function.
+ *
+ * @return array
+ *   AJAX command.
+ */
+function minidialog_ajax_command_open(array $options = null) {
+  return array(
+    'command'   => 'invoke',
+    'selector'  => null,
+    'method'    => 'MiniDialogOpen',
+    'arguments' => array($options),
+  );
+}
+
+/**
+ * Close the minidialog dialog.
+ *
+ * @param boolean|string $redirect
+ *   If set to false, just close the dialog.
+ *   If set to true, close the dialog and reload the same page.
+ *   If set to a string, use this as a path for redirection.
+ *   If an array, use it as call args for url() method.
+ */
+function minidialog_ajax_command_close($redirect = false) {
+
+  if (is_array($redirect)) {
+    $redirect = call_user_func_array('url', $redirect);
+  } else if (is_string()) {
+    $redirect = url($redirect);
+  } else {
+    $redirect = (bool)$redirect;
+  }
+
+  return array(
+    'command'   => 'invoke',
+    'selector'  => null,
+    'method'    => 'MiniDialogClose',
+    'arguments' => array($redirect),
+  );
+}

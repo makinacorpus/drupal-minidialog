@@ -1,0 +1,4 @@
+name = Mini dialog
+core = 7.x
+description = Provide an small JS/CSS mini dialog with open/close ajax commands.
+package = Utility
