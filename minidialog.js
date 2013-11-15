@@ -10,7 +10,7 @@
       var key = null, jTarget = jQuery("#minidialog"), defaults = {
         width: "400px",
         height: "auto",
-        hideTitleBar: true,
+        //hideTitleBar: true,
         modal: true
       };
 
@@ -68,9 +68,21 @@
 
   Drupal.behaviors.MiniDialog = {
     attach: function (context) {
-      jQuery(context).find("body").once("minidialog", function () {
+      var jContext = jQuery(context);
+      jContext.find("body").once("minidialog", function () {
         jQuery(this).append("<div id=\"minidialog\" style=\"display:none;\"><div class=\"content\"></div></div>");
       });
+      /*
+      jContext.find("a.minidialog").once("minidialog", function () {
+        jQuery(this).click(function (e) {
+          var jDialog = jQuery("#minidialog");
+          e.preventDefault();
+          // Do not stop propagation Drupal.ajax needs it.
+          jQuery("#minidialog .content").html("<p>Loading</p>");
+          jQuery.fn.MiniDialogOpen();
+        });
+      });
+       */
     }
   };
 
