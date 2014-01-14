@@ -111,7 +111,7 @@ function minidialog_ajax_command_close($redirect = false) {
 
   if (is_array($redirect)) {
     $redirect = call_user_func_array('url', $redirect);
-  } else if (is_string()) {
+  } else if (is_string($redirect)) {
     $redirect = url($redirect);
   } else {
     $redirect = (bool)$redirect;
