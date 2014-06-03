@@ -42,6 +42,13 @@
         jQuery("#minidialog").dialog("destroy");
       });
 
+      // Appends some behaviors to forms inside to avoid multiple submits.
+      /*
+      jTarget.find("input[type=submit]").on("click", function () {
+        console.log("button clicked")
+      });
+       */
+
       // setTimeout() call is a workaround: in some edge cases the dialog
       // opens too quickly and does not center properly according to content
       // size..
@@ -53,8 +60,12 @@
 
     MiniDialogClose: function (redirect) {
       if (redirect) {
-        if (true === redirect) {
-          window.location.href = window.location.href;
+        if (true === redirect || redirect === window.location.href) {
+          if (window.location.reload) {
+            window.location.reload();
+          } else {
+            window.location.href = window.location.href;
+          }
         } else {
           window.location.href = redirect;
         }
