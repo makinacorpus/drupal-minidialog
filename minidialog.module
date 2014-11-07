@@ -90,6 +90,9 @@ function minidialog_ajax_command_content($content) {
  *   AJAX command.
  */
 function minidialog_ajax_command_open(array $options = null) {
+  if (empty($options['title'])) {
+    $options['title'] = drupal_get_title();
+  }
   return array(
     'command'   => 'invoke',
     'selector'  => null,
