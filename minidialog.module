@@ -1,9 +1,49 @@
 <?php
-
 /**
  * @file
  * Mini dialog module.
  */
+
+/**
+ * Tell if the current incomming query is AJAX or JSONP.
+ *
+ * @return boolean
+ */
+function minidialog_is_ajax() {
+
+  $isNotHtml = &drupal_static(__FUNCTION__);
+
+  if (null === $isNotHtml) {
+
+    $current_path = function_exists('current_path') ? current_path() : $_GET['q'];
+
+    if (isset($_SERVER['X-Requested-With']) && 'xmlhttprequest' === strtolower($_SERVER['X-Requested-With'])) {
+      // We are AJAX!
+      $isNotHtml = true;
+    } else if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 'xmlhttprequest' === strtolower($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+      // We are AJAX!
+      $isNotHtml = true;
+    } else if (false !== strpos($current_path, 'ajax') && isset($_GET['callback'])) {
+      // We probably are JSONP.
+      $isNotHtml = true;
+    } else {
+      $isNotHtml = false;
+    }
+  }
+
+  return $isNotHtml;
+}
+
+/**
+ * Get the chance of intercepting queries dedicated to be displayed
+ * in a dialog, without being done for.
+ */
+function minidialog_page_delivery_callback_alter(&$delivery_callback) {
+  if (minidialog_is_ajax() && isset($_GET['minidialog'])) {
+    require_once __DIR__ . '/minidialog.deliver.inc';
+    $delivery_callback = 'minidialog_deliver_ajax_dialog';
+  }
+}
 
 /**
  * Implements hook_page_build().

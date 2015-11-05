@@ -8,7 +8,7 @@
     MiniDialogOpen: function (options) {
 
       var key = null, jTarget = jQuery("#minidialog"), defaults = {
-        width: "400px",
+        width: "600px",
         height: "auto",
         //hideTitleBar: true,
         modal: true
@@ -80,20 +80,27 @@
   Drupal.behaviors.MiniDialog = {
     attach: function (context) {
       var jContext = jQuery(context);
+
+      // Create the necessary DOM element.
       jContext.find("body").once("minidialog", function () {
         jQuery(this).append("<div id=\"minidialog\" style=\"display:none;\"><div class=\"content\"></div></div>");
       });
-      /*
+
+      // Catch our links and trigger the right behaviors on it.
       jContext.find("a.minidialog").once("minidialog", function () {
-        jQuery(this).click(function (e) {
-          var jDialog = jQuery("#minidialog");
-          e.preventDefault();
-          // Do not stop propagation Drupal.ajax needs it.
-          jQuery("#minidialog .content").html("<p>Loading</p>");
-          jQuery.fn.MiniDialogOpen();
-        });
+        jQuery(this)
+          .attr('href', function (i, h) {
+            return h + (h.indexOf('?') !== -1 ? "&minidialog=1" : "?minidialog=1");
+          })
+          .on("click", function (e) {
+            jQuery.fn.MiniDialogOpen({
+              content: "<p>" + Drupal.t("Loading") + "</p>",
+              title: Drupal.t("Please wait")
+            });
+            return false;
+          })
+        ;
       });
-       */
     }
   };
 
