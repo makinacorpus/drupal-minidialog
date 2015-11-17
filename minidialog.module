@@ -9,7 +9,7 @@
  * Implements hook_page_build().
  */
 function minidialog_page_build(&$page) {
-  drupal_add_library('minidialog', 'dialog', true);
+  drupal_add_library('minidialog', 'dialog');
 }
 
 /**
