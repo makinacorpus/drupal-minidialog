@@ -1,0 +1,19 @@
+{
+    "name" : "makinacorpus/drupal-minidialog",
+    "type" : "drupal-module",
+    "description" : "Very simple dialog module for Drupal",
+    "homepage" : "http://github.com/makinacorpus/drupal-minidialog",
+    "license" : "GPL-2",
+    "authors" : [
+        {
+            "name" : "Pierre Rineau",
+            "email" : "pierre.rineau@makina-corpus.com"
+        },
+        {
+            "name" : "Makina Corpus",
+            "homepage" : "http://makina-corpus.com"
+        }
+    ],
+    "minimum-stability" : "dev",
+    "prefer-stable" : true
+}
