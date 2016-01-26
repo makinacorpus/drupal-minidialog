@@ -53,6 +53,35 @@ function minidialog_page_build(&$page) {
 }
 
 /**
+ * Implements hook_custom_theme().
+ */
+function minidialog_custom_theme() {
+  if (minidialog_is_ajax()) {
+    if (isset($_POST['ajax_page_state']['theme'])) {
+      // Force previous page theme.
+      return $_POST['ajax_page_state']['theme'];
+    }
+  }
+}
+
+/**
+ * Implements hook_admin_paths().
+ */
+function minidialog_admin_paths() {
+  $ret = array('media/browser' => true);
+  // jquery_update uses the path_is_admin() function to determine whether or
+  // not we are using an admin theme, sadly some drupal_add_*() are being
+  // added via ajax, and 'system/ajax' is not an admin path per default...
+  // Compute this dynamically and prey it works.
+  if ('system/ajax' === current_path()) {
+    if (isset($_POST['ajax_page_state']['theme']) && $_POST['ajax_page_state']['theme'] === variable_get('admin_theme', null)) {
+      $ret['system/ajax'] = true;
+    }
+  }
+  return $ret;
+}
+
+/**
  * Implements hook_library().
  */
 function minidialog_library() {
@@ -71,6 +100,7 @@ function minidialog_library() {
         ),
       ),
       'dependencies' => array(
+        array('system', 'drupal.ajax'),
         array('system', 'ui.dialog'),
       ),
     ),
