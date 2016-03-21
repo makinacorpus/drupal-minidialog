@@ -1,8 +1,11 @@
 (function ($) {
   "use strict";
 
-  // Add a small plugin
+  // Add a small plugin for Ajax commands
   $.fn.extend({
+    /**
+     * Used through a Drupal ajax command
+     */
     MiniDialogOpen: function (options) {
 
       var key = null,
@@ -59,7 +62,7 @@
     },
 
     /**
-     * Donot remove: Can be used through a Drupal ajax command 
+     * Used through a Drupal ajax command
      */
     MiniDialogClose: function (redirect) {
       if (redirect) {
@@ -88,21 +91,12 @@
         $(this).append('<div id="minidialog" style="display:none;"><div class="content"></div></div>');
       });
 
-      // Catch our links and trigger the right behaviors on it.
-      $(document, context).on('click', 'a.minidialog', function () {
-        $(this).once('minidialog', function () {
-          $(this).attr('href', function (i, h) {
-            if (h.indexOf('minidialog=1') === -1) {
-              h += (h.indexOf('?') !== -1 ? "&minidialog=1" : "?minidialog=1");
-            }
-            return h;
-          });
-          $.MiniDialogOpen({
-            content: "<p>" + Drupal.t("Loading") + "</p>",
-            title: Drupal.t("Please wait")
-          });
-        });
-        return false;
+      // Catch our links and add add the right parameter on them.
+      $(this).once('minidialog').attr('href', function (i, h) {
+        if (h.indexOf('minidialog=1') === -1) {
+          h += (h.indexOf('?') !== -1 ? "&minidialog=1" : "?minidialog=1");
+        }
+        return h;
       });
     }
   };
