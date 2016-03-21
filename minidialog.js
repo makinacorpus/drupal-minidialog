@@ -1,22 +1,22 @@
-;(function (jQuery) {
+(function ($) {
   "use strict";
 
-  // I'm sorry for what I have done. Anyone that knows better jQuery please
-  // rewrite this once for all.
-  jQuery.fn.extend({
-
+  // Add a small plugin
+  $.fn.extend({
     MiniDialogOpen: function (options) {
 
-      var key = null, jTarget = jQuery("#minidialog"), defaults = {
-        width: "600px",
-        height: "auto",
-        //hideTitleBar: true,
-        modal: true
-      };
+      var key = null,
+        $minidialog = $("#minidialog"),
+        defaults = {
+          width: "600px",
+          height: "auto",
+          hideTitleBar: false,
+          modal: true
+        };
 
       if (options) {
         for (key in defaults) {
-          if (!options[key]) {
+          if (defaults.hasOwnProperty(key) && !options[key]) {
             options[key] = defaults[key];
           }
         }
@@ -25,28 +25,28 @@
       }
       options.open = true;
 
-      jTarget.dialog(options);
+      $minidialog.dialog(options);
 
       if (options.hideTitleBar) {
-        jTarget.parent().find(".ui-dialog-titlebar").css({
+        $minidialog.parent().find(".ui-dialog-titlebar, .modal-title").css({
           display: "none",
           visibility: "hidden"
         });
       }
 
-      jTarget.find("#minidialog-close").click(function (ev) {
+      $minidialog.find("#minidialog-close").click(function (ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        jQuery("#minidialog .content").html("");
-        jQuery("#minidialog").dialog("close");
-        jQuery("#minidialog").dialog("destroy");
+        $minidialog.find(".content").html("");
+        $minidialog.dialog("close")
+          .dialog("destroy");
       });
 
       // Appends some behaviors to forms inside to avoid multiple submits.
       /*
-      jTarget.find("input[type=submit]").on("click", function () {
-        console.log("button clicked")
-      });
+       $minidialog.find("input[type=submit]").on("click", function () {
+       console.log("button clicked")
+       });
        */
 
       // setTimeout() call is a workaround: in some edge cases the dialog
@@ -54,10 +54,13 @@
       // size..
       // see http://stackoverflow.com/questions/2231446
       setTimeout(function () {
-        jTarget.dialog("open");
+        $minidialog.dialog("open");
       }, 500);
     },
 
+    /**
+     * Donot remove: Can be used through a Drupal ajax command 
+     */
     MiniDialogClose: function (redirect) {
       if (redirect) {
         if (true === redirect || redirect === window.location.href) {
@@ -70,38 +73,37 @@
           window.location.href = redirect;
         }
       } else {
-        jQuery("#minidialog .content").html("");
-        jQuery("#minidialog").dialog("close");
-        jQuery("#minidialog").dialog("destroy");
+        $('#minidialog')
+          .dialog("close")
+          .dialog("destroy")
+          .find('.content').html("");
       }
     }
   });
 
-  Drupal.behaviors.MiniDialog = {
+  Drupal.behaviors.minidialog = {
     attach: function (context) {
-      var jContext = jQuery(context);
-
       // Create the necessary DOM element.
-      jContext.find("body").once("minidialog", function () {
-        jQuery(this).append("<div id=\"minidialog\" style=\"display:none;\"><div class=\"content\"></div></div>");
+      $('body', context).once('minidialog', function () {
+        $(this).append('<div id="minidialog" style="display:none;"><div class="content"></div></div>');
       });
 
       // Catch our links and trigger the right behaviors on it.
-      jContext.find("a.minidialog").once("minidialog", function () {
-        jQuery(this)
-          .attr('href', function (i, h) {
-            return h + (h.indexOf('?') !== -1 ? "&minidialog=1" : "?minidialog=1");
-          })
-          .on("click", function (e) {
-            jQuery.fn.MiniDialogOpen({
-              content: "<p>" + Drupal.t("Loading") + "</p>",
-              title: Drupal.t("Please wait")
-            });
-            return false;
-          })
-        ;
+      $(document, context).on('click', 'a.minidialog', function () {
+        $(this).once('minidialog', function () {
+          $(this).attr('href', function (i, h) {
+            if (h.indexOf('minidialog=1') === -1) {
+              h += (h.indexOf('?') !== -1 ? "&minidialog=1" : "?minidialog=1");
+            }
+            return h;
+          });
+          $.MiniDialogOpen({
+            content: "<p>" + Drupal.t("Loading") + "</p>",
+            title: Drupal.t("Please wait")
+          });
+        });
+        return false;
       });
     }
   };
-
 }(jQuery));
