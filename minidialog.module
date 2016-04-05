@@ -1,8 +1,11 @@
 <?php
+
 /**
  * @file
  * Mini dialog module.
  */
+
+define('MINIDIALOG_VAR_JS_ALL', 'minidialog_js_every_page');
 
 /**
  * Tell if the current incomming query is AJAX or JSONP.
@@ -49,7 +52,9 @@ function minidialog_page_delivery_callback_alter(&$delivery_callback) {
  * Implements hook_page_build().
  */
 function minidialog_page_build(&$page) {
-  drupal_add_library('minidialog', 'dialog');
+  if (variable_get(MINIDIALOG_VAR_JS_ALL, TRUE)) {
+    drupal_add_library('minidialog', 'dialog');
+  }
 }
 
 /**
@@ -153,7 +158,7 @@ function minidialog_ajax_command_content($content) {
 /**
  * Open the minidialog dialog.
  *
- * @param array $content
+ * @param array $options
  *   Options for jQuery UI's jQuery.dialog() function.
  *
  * @return array
@@ -179,6 +184,9 @@ function minidialog_ajax_command_open(array $options = null) {
  *   If set to true, close the dialog and reload the same page.
  *   If set to a string, use this as a path for redirection.
  *   If an array, use it as call args for url() method.
+ *
+ * @return array
+ *   AJAX command.
  */
 function minidialog_ajax_command_close($redirect = false) {
 
