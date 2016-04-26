@@ -1,0 +1,11 @@
+services:
+  minidialog.event_subscriber.dialog:
+    class: MakinaCorpus\Drupal\MiniDialog\EventSubscriber\DialogResponseSubscriber
+    tags: [{name: event_subscriber}]
+  minidialog.twig.extension.dialog:
+    public: false
+    class: MakinaCorpus\Drupal\MiniDialog\Twig\Extension\MiniDialogExtension
+    calls:
+      - [setRouter, ['@?router']]
+      - [setRequestStack, ['@?request_stack']]
+    tags: [{name: twig.extension}]
