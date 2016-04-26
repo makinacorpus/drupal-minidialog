@@ -94,11 +94,19 @@ function minidialog_deliver_ajax_dialog($page_callback_result) {
     $return = $page_callback_result;
   }
 
+  $options = [];
+  if (isset($_GET['wide']) && $_GET['wide']) {
+    $options['wide'] = true;
+  }
+  if (isset($_GET['ajaxify']) && $_GET['ajaxify']) {
+    $options['ajaxify'] = true;
+  }
+
   ajax_deliver(array(
     '#type'     => 'ajax',
     '#commands' => array(
       minidialog_ajax_command_content($return),
-      minidialog_ajax_command_open(),
+      minidialog_ajax_command_open($options),
     ),
   ));
 }

@@ -168,6 +168,13 @@ function minidialog_ajax_command_open(array $options = null) {
   if (empty($options['title'])) {
     $options['title'] = drupal_get_title();
   }
+  if (empty($options['width'])) {
+    if (isset($options['wide']) && $options['wide']) {
+      $options['width'] = variable_get('minidialog_width_wide', '960px');
+    } else {
+      $options['width'] = variable_get('minidialog_width_default', '600px');
+    }
+  }
   return array(
     'command'   => 'invoke',
     'selector'  => null,

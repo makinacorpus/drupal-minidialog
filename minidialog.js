@@ -1,4 +1,4 @@
-(function ($) {
+(function ($, window) {
   "use strict";
 
   // Add a small plugin for Ajax commands
@@ -46,11 +46,35 @@
       });
 
       // Appends some behaviors to forms inside to avoid multiple submits.
-      /*
-       $minidialog.find("input[type=submit]").on("click", function () {
-       console.log("button clicked")
-       });
-       */
+      if (options.ajaxify) {
+        $minidialog
+          .find("form")
+          .each(function () {
+            var $this = $(this);
+            var action = $this.attr('action');
+            console.log(action);
+            if (action && -1 === action.indexOf('minidialog=')) {
+              console.log("saope");
+              if (-1 === action.indexOf('?')) {
+                $this.attr('action', action + '?minidialog=1');
+              } else {
+                $this.attr('action', action + '&minidialog=1');
+              }
+            }
+          })
+          .ajaxForm(function (response, status) {
+            if ("string" === typeof response) {
+              $minidialog.find('.content').html(response);
+              Drupal.attachBehaviors($minidialog);
+            } else {
+              // Else attempt to pass that to Drupal.ajax and prey
+              var element = $('<a href="" class="use-ajax">');
+              var hugeHack = new Drupal.ajax('you_know_what', element, {url: 'system/ajax'});
+              hugeHack.success(response, status);
+            }
+          })
+        ;
+      }
 
       // setTimeout() call is a workaround: in some edge cases the dialog
       // opens too quickly and does not center properly according to content
@@ -100,4 +124,4 @@
       });
     }
   };
-}(jQuery));
+}(jQuery, window));
