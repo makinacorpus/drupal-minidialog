@@ -52,15 +52,22 @@
           .each(function () {
             var $this = $(this);
             var action = $this.attr('action');
-            console.log(action);
-            if (action && -1 === action.indexOf('minidialog=')) {
-              console.log("saope");
-              if (-1 === action.indexOf('?')) {
-                $this.attr('action', action + '?minidialog=1');
-              } else {
-                $this.attr('action', action + '&minidialog=1');
+            var linkOptions = {
+                minidialog: 1,
+                ajaxify: 1,
+                wide: options.wide ? 1 : 0
+            };
+            var opt;
+            for (opt in linkOptions) {
+              if (action && -1 === action.indexOf(opt + '=')) {
+                if (-1 === action.indexOf('?')) {
+                  action = action + '?' + opt + '=' + linkOptions[opt];
+                } else {
+                  action = action + '&' + opt + '=' + linkOptions[opt];
+                }
               }
             }
+            $this.attr('action', action);
           })
           .ajaxForm(function (response, status) {
             if ("string" === typeof response) {
@@ -110,6 +117,7 @@
 
   Drupal.behaviors.minidialog = {
     attach: function (context) {
+
       // Create the necessary DOM element.
       $('body', context).once('minidialog', function () {
         $(this).append('<div id="minidialog" style="display:none;"><div class="content"></div></div>');
