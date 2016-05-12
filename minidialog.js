@@ -69,15 +69,18 @@
             }
             $this.attr('action', action);
           })
-          .ajaxForm(function (response, status) {
-            if ("string" === typeof response) {
-              $minidialog.find('.content').html(response);
-              Drupal.attachBehaviors($minidialog);
-            } else {
-              // Else attempt to pass that to Drupal.ajax and prey
-              var element = $('<a href="" class="use-ajax">');
-              var hugeHack = new Drupal.ajax('you_know_what', element, {url: 'system/ajax'});
-              hugeHack.success(response, status);
+          .ajaxForm({
+            dataType: 'json',
+            success: function (response, status) {
+              if ("string" === typeof response) {
+                $minidialog.find('.content').html(response);
+                Drupal.attachBehaviors($minidialog);
+              } else {
+                // Else attempt to pass that to Drupal.ajax and prey
+                var element = $('<a href="" class="use-ajax">');
+                var hugeHack = new Drupal.ajax('you_know_what', element, {url: 'system/ajax'});
+                hugeHack.success(response, status);
+              }
             }
           })
         ;

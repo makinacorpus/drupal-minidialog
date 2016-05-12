@@ -27,7 +27,7 @@ class DialogResponseSubscriber implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
-        if (!$request->isXmlHttpRequest()) {
+        if (!$request->isXmlHttpRequest() && !$request->isMethod('POST')) {
             return;
         }
         if (!$request->query->get('minidialog')) {
