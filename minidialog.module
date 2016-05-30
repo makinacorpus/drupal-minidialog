@@ -106,6 +106,7 @@ function minidialog_library() {
       ),
       'dependencies' => array(
         array('system', 'drupal.ajax'),
+        array('system', 'jquery.form'),
         array('system', 'ui.dialog'),
       ),
     ),
