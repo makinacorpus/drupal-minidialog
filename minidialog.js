@@ -3,6 +3,24 @@
 
   // Add a small plugin for Ajax commands
   $.fn.extend({
+
+    /**
+     * Set the minidialog content, implies open
+     */
+    MiniDialogContent: function (options) {
+      if (!options.content) {
+        return;
+      }
+      var $content = $("#minidialog").find(".content");
+      $content.html(options.content);
+      Drupal.attachBehaviors($content);
+      // Sometimes it work first time, sometimes not...
+      setTimeout(function () {
+        Drupal.attachBehaviors($content);
+      }, 700);
+      $.fn.MiniDialogOpen(options);
+    },
+
     /**
      * Used through a Drupal ajax command
      */
@@ -90,9 +108,15 @@
       // opens too quickly and does not center properly according to content
       // size..
       // see http://stackoverflow.com/questions/2231446
+      /*
+       * ARGG... Actually, we do have a serious problem when using Drupal.ajax,
+       * timeout will disallow some behaviors to be correctly set, I have no
+       * idea why on earth this may happen.
+       *
       setTimeout(function () {
         $minidialog.dialog("open");
       }, 500);
+       */
     },
 
     /**

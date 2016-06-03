@@ -122,7 +122,7 @@ function minidialog_library() {
  * @return array
  *   AJAX command.
  */
-function minidialog_ajax_command_content($content) {
+function minidialog_ajax_command_content($content, array $options = null) {
 
   if (is_array($content)) {
 
@@ -153,7 +153,15 @@ function minidialog_ajax_command_content($content) {
     $content = (string)$content;
   }
 
-  return ajax_command_html('#minidialog .content', $content);
+  if (!$options) {
+    $options = [];
+  }
+  $options['content'] = $content;
+
+  $command = minidialog_ajax_command_open($options);
+  $command['method'] = 'MiniDialogContent';
+
+  return $command;
 }
 
 /**

@@ -105,8 +105,7 @@ function minidialog_deliver_ajax_dialog($page_callback_result) {
   ajax_deliver(array(
     '#type'     => 'ajax',
     '#commands' => array(
-      minidialog_ajax_command_content($return),
-      minidialog_ajax_command_open($options),
+      minidialog_ajax_command_content($return, $options),
     ),
   ));
 }
