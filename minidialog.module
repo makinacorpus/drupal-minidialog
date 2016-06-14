@@ -78,9 +78,9 @@ function minidialog_admin_paths() {
   // not we are using an admin theme, sadly some drupal_add_*() are being
   // added via ajax, and 'system/ajax' is not an admin path per default...
   // Compute this dynamically and prey it works.
-  if ('system/ajax' === current_path()) {
+  if ('system/ajax' === current_path() || minidialog_is_ajax()) {
     if (isset($_POST['ajax_page_state']['theme']) && $_POST['ajax_page_state']['theme'] === variable_get('admin_theme', null)) {
-      $ret['system/ajax'] = true;
+      $ret[current_path()] = true;
     }
   }
   return $ret;
