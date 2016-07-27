@@ -8,6 +8,9 @@
      * Set the minidialog content, implies open
      */
     MiniDialogContent: function (options) {
+      if ("string" === typeof options) {
+        options = {content: options};
+      }
       if (!options.content) {
         return;
       }
@@ -26,14 +29,18 @@
      */
     MiniDialogOpen: function (options) {
 
-      var key = null,
-        $minidialog = $("#minidialog"),
-        defaults = {
-          width: "600px",
-          height: "auto",
-          hideTitleBar: false,
-          modal: true
-        };
+      var key = null;
+      var $minidialog = $("#minidialog");
+      var defaults = {
+        width: "600px",
+        height: "auto",
+        hideTitleBar: false,
+        modal: true
+      };
+
+      if ("string" === typeof options) {
+        options = {content: options};
+      }
 
       if (options) {
         for (key in defaults) {
@@ -71,9 +78,9 @@
             var $this = $(this);
             var action = $this.attr('action');
             var linkOptions = {
-                minidialog: 1,
-                ajaxify: 1,
-                wide: options.wide ? 1 : 0
+              minidialog: 1,
+              ajaxify: 1,
+              wide: options.wide ? 1 : 0
             };
             var opt;
             for (opt in linkOptions) {
