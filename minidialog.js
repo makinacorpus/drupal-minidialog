@@ -31,6 +31,7 @@
 
       var key = null;
       var $minidialog = $("#minidialog");
+      var minidialog = $minidialog.get(0);
       var defaults = {
         width: "600px",
         height: "auto",
@@ -40,6 +41,11 @@
 
       if ("string" === typeof options) {
         options = {content: options};
+      }
+
+      // Set "wide" width before applying default
+      if (options && options.wide && !options.width) {
+        options.width = "900px";
       }
 
       if (options) {
@@ -69,6 +75,13 @@
         $minidialog.dialog("close")
           .dialog("destroy");
       });
+
+      // Allow caller to change minidialog class for theming
+      if (options['class']) {
+        minidialog['class'] = options['class'];
+      } else {
+        minidialog['class'] = "";
+      }
 
       // Appends some behaviors to forms inside to avoid multiple submits.
       if (options.ajaxify) {
