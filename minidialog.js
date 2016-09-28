@@ -1,5 +1,220 @@
-(function ($, window) {
+(function ($, window, Drupal, document) {
   "use strict";
+
+  var currentDialog;
+
+  /**
+   * Resize iframe
+   *
+   * @param element target
+   *   IFrame DOMElement
+   */
+  function resizeIFrameToFitContent(target) {
+    target.width  = target.contentWindow.document.body.scrollWidth;
+    target.height = target.contentWindow.document.body.scrollHeight;
+  }
+
+  /**
+   * Close and destroy the given dialog
+   *
+   * @param object dialog
+   */
+  function destroyDialog(dialog) {
+    dialog.content.innerHTML = "";
+    dialog.handle.dialog("close");
+    dialog.handle.dialog("destroy");
+  }
+
+  /**
+   * Normalize dialog options for jQuery dialog
+   *
+   * @param object options
+   *   API user input and options
+   *
+   * @returns object
+   *   Normalized and default-populated options
+   */
+  function normalizeOptions(options) {
+
+    var key = null;
+    var defaults = {
+      width: "600px",
+      height: "auto",
+      hideTitleBar: false,
+      modal: true
+    };
+
+    if ("string" === typeof options) {
+      options = {content: options};
+    }
+    if (options.iframe) {
+      if (!options.href) {
+        throw "You must provide the 'href' property when using the 'iframe' option";
+      }
+    } else if (!options.content) {
+      throw "You must provide the 'content' property";
+    }
+
+    // Set "wide" width before applying default
+    if (options && options.wide && !options.width) {
+      options.width = "900px";
+    }
+
+    if (options) {
+      for (key in defaults) {
+        if (defaults.hasOwnProperty(key) && !options[key]) {
+          options[key] = defaults[key];
+        }
+      }
+    } else {
+      options = defaults;
+    }
+    options.open = true;
+
+    return options;
+  }
+
+  /**
+   * Open a new dialog
+   *
+   * @param object|string options
+   *   Either the content, for default display options, or an array jQuery
+   *   dialog options containing the "content" attributes with the supposed
+   *   dialog content.
+   *   If the 'iframe' content is specified, content will be ignored and
+   *   the 'href' key must be used instead. If no 'href' is provided and
+   *   'content' is given, it will attempt to use 'content' as an URL.
+   *
+   * @returns object
+   *   Handle to the dialog
+   */
+  function openDialog(options) {
+
+    // @todo this supposes there is only one. It should be spawned dyanmically
+    //   by this javascript code instead
+    var $minidialog = $("#minidialog");
+    var minidialog = $minidialog.get(0);
+
+    options = normalizeOptions(options);
+
+    var dialog = {
+      handle: $minidialog,
+      content: $minidialog.find('.content').get(0),
+      options: options
+    };
+
+    $minidialog.dialog(options);
+
+    if (options.hideTitleBar) {
+      $minidialog.parent().find(".ui-dialog-titlebar, .modal-title").css({
+        display: "none",
+        visibility: "hidden"
+      });
+    }
+
+    $minidialog.find("#minidialog-close").click(function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      destroyDialog(dialog);
+    });
+
+    // Allow caller to change minidialog class for theming
+    if (options['class']) {
+      minidialog['class'] = options['class'];
+    } else {
+      minidialog['class'] = "";
+    }
+
+    if (options.iframe) {
+      var target = document.createElement("iframe");
+      target.seamless = "seamless";
+      target.setAttribute('frameborder', 0);
+      target.setAttribute('src', options.href);
+      target.setAttribute('width', "100%");
+      target.onload = function () {
+        resizeIFrameToFitContent(this);
+      };
+      setDialogContent(dialog, target);
+      // @todo Iframe communication
+    } else {
+      setDialogContent(dialog, options.content);
+    }
+
+    return dialog;
+  }
+
+  /**
+   * Set dialog content
+   *
+   * @param object dialog
+   * @param DOMNode|string content
+   */
+  function setDialogContent(dialog, content) {
+    if ("string" === typeof content) {
+      dialog.content.innerHTML = content;
+
+      // @todo tainted, but working
+      Drupal.attachBehaviors(dialog.content);
+      // Sometimes it work first time, sometimes not...
+      setTimeout(function () {
+        Drupal.attachBehaviors(dialog.content);
+      }, 700);
+
+      applyContentAjaxification(dialog);
+
+    } else {
+      dialog.content.innerHTML = "";
+      dialog.content.appendChild(content);
+    }
+  }
+
+  /**
+   * Apply ajaxification on dialog content
+   *
+   * @param object dialog
+   */
+  function applyContentAjaxification(dialog) {
+    // Appends some behaviors to forms inside to avoid multiple submits.
+    if (dialog.options.ajaxify) {
+      dialog.handle
+        .find("form")
+        .each(function () {
+          var $this = $(this);
+          var action = $this.attr('action');
+          var linkOptions = {
+            minidialog: 1,
+            ajaxify: 1,
+            wide: dialog.options.wide ? 1 : 0
+          };
+          var opt;
+          for (opt in linkOptions) {
+            if (action && -1 === action.indexOf(opt + '=')) {
+              if (-1 === action.indexOf('?')) {
+                action = action + '?' + opt + '=' + linkOptions[opt];
+              } else {
+                action = action + '&' + opt + '=' + linkOptions[opt];
+              }
+            }
+          }
+          $this.attr('action', action);
+        })
+        .ajaxForm({
+          dataType: 'json',
+          success: function (response, status) {
+            if ("string" === typeof response) {
+              dialog.content.html(response);
+              Drupal.attachBehaviors(dialog.handle);
+            } else {
+              // Else attempt to pass that to Drupal.ajax and prey
+              var element = $('<a href="" class="use-ajax">');
+              var hugeHack = new Drupal.ajax('you_know_what', element, {url: 'system/ajax'});
+              hugeHack.success(response, status);
+            }
+          }
+        })
+      ;
+    }
+  }
 
   // Add a small plugin for Ajax commands
   $.fn.extend({
@@ -8,20 +223,7 @@
      * Set the minidialog content, implies open
      */
     MiniDialogContent: function (options) {
-      if ("string" === typeof options) {
-        options = {content: options};
-      }
-      if (!options.content) {
-        return;
-      }
-      var $content = $("#minidialog").find(".content");
-      $content.html(options.content);
-      Drupal.attachBehaviors($content);
-      // Sometimes it work first time, sometimes not...
-      setTimeout(function () {
-        Drupal.attachBehaviors($content);
-      }, 700);
-      $.fn.MiniDialogOpen(options);
+      currentDialog = openDialog(options);
     },
 
     /**
@@ -29,100 +231,11 @@
      */
     MiniDialogOpen: function (options) {
 
-      var key = null;
-      var $minidialog = $("#minidialog");
-      var minidialog = $minidialog.get(0);
-      var defaults = {
-        width: "600px",
-        height: "auto",
-        hideTitleBar: false,
-        modal: true
-      };
-
-      if ("string" === typeof options) {
-        options = {content: options};
+      if (currentDialog) {
+        destroyDialog(currentDialog);
       }
 
-      // Set "wide" width before applying default
-      if (options && options.wide && !options.width) {
-        options.width = "900px";
-      }
-
-      if (options) {
-        for (key in defaults) {
-          if (defaults.hasOwnProperty(key) && !options[key]) {
-            options[key] = defaults[key];
-          }
-        }
-      } else {
-        options = defaults;
-      }
-      options.open = true;
-
-      $minidialog.dialog(options);
-
-      if (options.hideTitleBar) {
-        $minidialog.parent().find(".ui-dialog-titlebar, .modal-title").css({
-          display: "none",
-          visibility: "hidden"
-        });
-      }
-
-      $minidialog.find("#minidialog-close").click(function (ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        $minidialog.find(".content").html("");
-        $minidialog.dialog("close")
-          .dialog("destroy");
-      });
-
-      // Allow caller to change minidialog class for theming
-      if (options['class']) {
-        minidialog['class'] = options['class'];
-      } else {
-        minidialog['class'] = "";
-      }
-
-      // Appends some behaviors to forms inside to avoid multiple submits.
-      if (options.ajaxify) {
-        $minidialog
-          .find("form")
-          .each(function () {
-            var $this = $(this);
-            var action = $this.attr('action');
-            var linkOptions = {
-              minidialog: 1,
-              ajaxify: 1,
-              wide: options.wide ? 1 : 0
-            };
-            var opt;
-            for (opt in linkOptions) {
-              if (action && -1 === action.indexOf(opt + '=')) {
-                if (-1 === action.indexOf('?')) {
-                  action = action + '?' + opt + '=' + linkOptions[opt];
-                } else {
-                  action = action + '&' + opt + '=' + linkOptions[opt];
-                }
-              }
-            }
-            $this.attr('action', action);
-          })
-          .ajaxForm({
-            dataType: 'json',
-            success: function (response, status) {
-              if ("string" === typeof response) {
-                $minidialog.find('.content').html(response);
-                Drupal.attachBehaviors($minidialog);
-              } else {
-                // Else attempt to pass that to Drupal.ajax and prey
-                var element = $('<a href="" class="use-ajax">');
-                var hugeHack = new Drupal.ajax('you_know_what', element, {url: 'system/ajax'});
-                hugeHack.success(response, status);
-              }
-            }
-          })
-        ;
-      }
+      currentDialog = openDialog(options);
 
       // setTimeout() call is a workaround: in some edge cases the dialog
       // opens too quickly and does not center properly according to content
@@ -154,14 +267,16 @@
           window.location.href = redirect;
         }
       } else {
-        $('#minidialog')
-          .dialog("close")
-          .dialog("destroy")
-          .find('.content').html("");
+        if (currentDialog) {
+          destroyDialog(currentDialog);
+        }
       }
     }
   });
 
+  /**
+   * Drupal behavior.
+   */
   Drupal.behaviors.minidialog = {
     attach: function (context) {
 
@@ -177,6 +292,20 @@
         }
         return h;
       });
+
+      $(context).find('.minidialog').once('minidialog-ajax', function () {
+        if (-1 !== this.href.indexOf('iframe=1')) {
+          $(this).on("click", function (event) {
+            // @todo find a way to propagate options
+            event.stopPropagation();
+            event.preventDefault();
+            $.fn.MiniDialogOpen({
+              iframe: true,
+              href: this.href
+            });
+          });
+        }
+      });
     }
   };
-}(jQuery, window));
+}(jQuery, window, Drupal, document));
