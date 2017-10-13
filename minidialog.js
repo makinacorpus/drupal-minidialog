@@ -16,10 +16,16 @@
       }
       var $content = $("#minidialog").find(".content");
       $content.html(options.content);
-      Drupal.attachBehaviors($content);
+      // Do it with an each to get the real relevant DOM context behind, you
+      // should never call attachBehaviors on a jQuery selector.
+      $content.each(function () {
+        Drupal.attachBehaviors(this);
+      });
       // Sometimes it work first time, sometimes not...
       setTimeout(function () {
-        Drupal.attachBehaviors($content);
+        $content.each(function () {
+          Drupal.attachBehaviors(this);
+        });
       }, 700);
       $.fn.MiniDialogOpen(options);
     },
