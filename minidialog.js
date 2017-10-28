@@ -1,6 +1,17 @@
 (function ($, window) {
   "use strict";
 
+  var DIALOG_TEMPLATE = '<div id="minidialog" class="minidialog-dialog" style="display:none;"><div class="content"></div></div>';
+  var currentDialog = null;
+
+  function createDialog() {
+    if (!currentDialog) {
+      currentDialog = $(DIALOG_TEMPLATE);
+      $(window.document.body).append(currentDialog);
+    }
+    return currentDialog;
+  }
+
   // Add a small plugin for Ajax commands
   $.fn.extend({
 
@@ -14,7 +25,7 @@
       if (!options.content) {
         return;
       }
-      var $content = $("#minidialog").find(".content");
+      var $content = createDialog().find(".content");
       $content.html(options.content);
       // Do it with an each to get the real relevant DOM context behind, you
       // should never call attachBehaviors on a jQuery selector.
@@ -36,7 +47,7 @@
     MiniDialogOpen: function (options) {
 
       var key = null;
-      var $minidialog = $("#minidialog");
+      var $minidialog = createDialog();
       var minidialog = $minidialog.get(0);
       var defaults = {
         width: "600px",
@@ -160,25 +171,18 @@
           window.location.href = redirect;
         }
       } else {
-        $('#minidialog')
-          .dialog("close")
-          .dialog("destroy")
-          .find('.content').html("");
+        if (currentDialog) {
+          currentDialog.dialog("close").dialog("destroy").remove();
+        }
       }
     }
   });
 
   Drupal.behaviors.minidialog = {
     attach: function (context) {
-
-      // Create the necessary DOM element.
-      $('body', context).once('minidialog', function () {
-        $(this).append('<div id="minidialog" style="display:none;"><div class="content"></div></div>');
-      });
-
       // Catch our links and add add the right parameter on them.
       $(this).once('minidialog').attr('href', function (i, h) {
-        if (h.indexOf('minidialog=1') === -1) {
+        if (h && h.indexOf('minidialog=1') === -1) {
           h += (h.indexOf('?') !== -1 ? "&minidialog=1" : "?minidialog=1");
         }
         return h;
