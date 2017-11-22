@@ -175,7 +175,7 @@ function minidialog_ajax_command_content($content, array $options = null) {
  */
 function minidialog_ajax_command_open(array $options = null) {
   if (empty($options['title'])) {
-    $options['title'] = drupal_get_title();
+    $options['title'] = htmlspecialchars_decode(drupal_get_title(), ENT_QUOTES);
   }
   if (empty($options['width'])) {
     if (isset($options['wide']) && $options['wide']) {
