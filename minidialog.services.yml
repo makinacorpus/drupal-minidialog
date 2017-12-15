@@ -1,5 +1,6 @@
 services:
   minidialog.event_subscriber.dialog:
+    public: true
     class: MakinaCorpus\Drupal\MiniDialog\EventSubscriber\DialogResponseSubscriber
     tags: [{name: event_subscriber}]
   minidialog.twig.extension.dialog:
