@@ -91,7 +91,11 @@ function minidialog_deliver_ajax_dialog($page_callback_result) {
         break;
     }
   } else if (isset($page_callback_result)) {
-    $return = $page_callback_result;
+    if (class_exists('Symfony\Component\HttpFoundation\Response') && $page_callback_result instanceof \Symfony\Component\HttpFoundation\Response) {
+      $return = $page_callback_result->getContent();
+    } else {
+      $return = $page_callback_result;
+    }
   }
 
   $options = [];
